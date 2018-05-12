@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import csv
-import re
 import requests
+import urllib
 from bs4 import BeautifulSoup
 
 url='https://get-information-schools.service.gov.uk/Downloads'
