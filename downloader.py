@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import requests
 import urllib
 from bs4 import BeautifulSoup
@@ -20,6 +21,8 @@ file_list=(
         'html_ref':'download-data-page|Academy sponsor and trust links)|download'
     }
 )
+
+os.chdir('data')
 
 def downloader(file_name, file_html_ref):
     try:
