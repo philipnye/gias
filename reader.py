@@ -38,11 +38,11 @@ def reader(file_name, file_html_ref):
 	link=soup.find(attrs={'data-track':file_html_ref})		# needs to be done this way rather than with soup.find(data-track='download-data-page|All EduBase data)|download') as HTML 5 attributes like data-* have names that can’t be used as keyword arguments
 	link_url=link.get('href')
 	link_text=link.get_text()
-	prev_file_size=data_structure[file_name]['size']
+	prev_file_size=file_sizes[file_name]
 	file_size=re.findall('[0-9]+[.]*[0-9]*', link_text)[0] + 'MB'
 	if float(file_size[:-2])<float(prev_file_size[:-2]):
 		log.write(file_name + ' file is smaller than previous version: ' + file_size + ' versus ' + prev_file_size + '\n')
-	data_structure[file_name]['size']=file_size
+	file_sizes[file_name]=file_size
 	csv_file=requests.get(link_url)
 	csv_file=csv_file.iter_lines()		# is required in order for csv file to be read correctly, without errors caused by new-line characters
 	reader=csv.DictReader(csv_file)
@@ -84,24 +84,28 @@ with open('log.txt', 'a') as log:
 		data_structure=json.load(data_structure_json)
 		with open('allowable_values.json', 'r+ ') as allowable_values_json:
 			allowable_values=json.load(allowable_values_json)
-			estab_type_group=allowable_values['estab_type_group'].split('; ')
-			estab_status=allowable_values['estab_status'].split('; ')
-			estab_phase=allowable_values['estab_phase'].split('; ')
-			estab_type=allowable_values['estab_type'].split('; ')
-			group_type=allowable_values['group_type'].split('; ')
-			for file in file_list:
-				reader(file['name'],file['html_ref'])
-			estab_type_group.sort()
-			estab_status.sort()
-			estab_phase.sort()
-			estab_type.sort()
-			group_type.sort()
-			data_structure_json.seek(0)		# needed to fend off a python 2.7 error when opening a file for reading *and* writing
-			json.dump(data_structure,data_structure_json,indent=2,sort_keys=True)
-			allowable_values['estab_type_group']='; '.join(str(x) for x in estab_type_group)
-			allowable_values['estab_status']='; '.join(str(x) for x in estab_status)
-			allowable_values['estab_phase']='; '.join(str(x) for x in estab_phase)
-			allowable_values['estab_type']='; '.join(str(x) for x in estab_type)
-			allowable_values['group_type']='; '.join(str(x) for x in group_type)
-			allowable_values_json.seek(0)
-			json.dump(allowable_values,allowable_values_json,indent=2,sort_keys=True)
+			with open('file_sizes.json', 'r+ ') as file_sizes_json:
+				file_sizes=json.load(file_sizes_json)
+				estab_type_group=allowable_values['estab_type_group'].split('; ')
+				estab_status=allowable_values['estab_status'].split('; ')
+				estab_phase=allowable_values['estab_phase'].split('; ')
+				estab_type=allowable_values['estab_type'].split('; ')
+				group_type=allowable_values['group_type'].split('; ')
+				for file in file_list:
+					reader(file['name'],file['html_ref'])
+				file_sizes_json.seek(0)		# needed to fend off a python 2.7 error when opening a file for reading *and* writing
+				json.dump(file_sizes,file_sizes_json,indent=2,sort_keys=True)
+				estab_type_group.sort()
+				estab_status.sort()
+				estab_phase.sort()
+				estab_type.sort()
+				group_type.sort()
+				data_structure_json.seek(0)		# as above
+				json.dump(data_structure,data_structure_json,indent=2,sort_keys=True)
+				allowable_values['estab_type_group']='; '.join(str(x) for x in estab_type_group)
+				allowable_values['estab_status']='; '.join(str(x) for x in estab_status)
+				allowable_values['estab_phase']='; '.join(str(x) for x in estab_phase)
+				allowable_values['estab_type']='; '.join(str(x) for x in estab_type)
+				allowable_values['group_type']='; '.join(str(x) for x in group_type)
+				allowable_values_json.seek(0)
+				json.dump(allowable_values,allowable_values_json,indent=2,sort_keys=True)
